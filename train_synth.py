@@ -29,8 +29,9 @@ class MinimalSquareSynth(nn.Module):
 
         attack = jnp.array([0.1])
         decay = jnp.array([0.1])
-        sustain = jnp.array([0.8])  # (0, 1)
+        sustain = jnp.array([0.8])
         release = jnp.array([0.3])
+        alpha = jnp.array([3.0])
 
         self.amp_env = ADSR(
             config=self.config,
@@ -38,15 +39,14 @@ class MinimalSquareSynth(nn.Module):
             decay=decay,
             sustain=sustain,
             release=release,
+            alpha=alpha
         )
-        # Trainable cutoff (Hz)
         self.cutoff = self.param(
             "cutoff",
             lambda rng: jax.random.uniform(
                 rng, (self.config.batch_size,), minval=800.0, maxval=6000.0
             ),
         )
-        # Trainable pitch (MIDI)
         self.midi_f0 = self.param(
             "midi_f0",
             lambda rng: jax.random.uniform(
@@ -138,7 +138,7 @@ def optimize_with_cma(audio_path: str, generations: int = 40, population: int = 
         key, key_tell = jax.random.split(key)
         es_state, _ = es.tell(key_tell, population_vecs, fitness, es_state, es_params)
 
-        if gen % 5 == 0:
+        if gen % 10 == 0:
             best_loss = float(jnp.min(fitness))
             print(f"gen {gen}: best_loss={best_loss:.4f}")
 
