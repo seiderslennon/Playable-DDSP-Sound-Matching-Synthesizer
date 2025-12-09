@@ -81,6 +81,9 @@ class MinimalSquareSynth(nn.Module):
 def load_target(audio_path: str):
     audio_path = "audio_targets/" + audio_path
     audio, sr = librosa.load(audio_path, sr=None, mono=True)
+    f0 = jnp.max(librosa.pyin(y=audio, fmin=32, fmax=5000)[0])
+    midi_f0 = 69.0 + 12.0 * jnp.log2(jnp.maximum(f0, 1e-12) / 440.0)
+    print('est. f0:', f0, 'midi note:', midi_f0)
     target = jnp.asarray(audio, dtype=jnp.float32)
     target = target / (jnp.max(jnp.abs(target)) + 1e-6)
 
@@ -92,9 +95,9 @@ def load_target(audio_path: str):
         target = jnp.pad(target, (0, buffer_size - target.shape[0]))
     else:
         target = target[:buffer_size]
-
     target = target[None, :]
-    return target, sr, config
+    
+    return target, sr, config, midi_f0
 
 
 def build_loss(model, target):
@@ -112,7 +115,7 @@ def build_loss(model, target):
 
 
 def optimize_with_cma(audio_path: str, generations: int = 40, population: int = 16, sigma: float = 2.0, seed: int = 0):
-    target, sr, config = load_target(audio_path)
+    target, sr, config, midi_f0 = load_target(audio_path)
     model = MinimalSquareSynth(config=config)
 
     key = jax.random.PRNGKey(seed)
@@ -122,9 +125,8 @@ def optimize_with_cma(audio_path: str, generations: int = 40, population: int = 
     loss_fn = build_loss(model, target)
     flat0, unravel_fn = ravel_pytree(params0)
 
-    # CMA-ES expects a sample solution vector; we use the flattened params.
     es = CMA_ES(population_size=population, solution=flat0)
-    es_params = es.default_params.replace(std_init=sigma)  # larger sigma for broader exploration
+    es_params = es.default_params.replace(std_init=sigma)
     key, key_init = jax.random.split(key)
     es_state = es.init(key_init, flat0, es_params)
 
@@ -156,13 +158,19 @@ def optimize_with_cma(audio_path: str, generations: int = 40, population: int = 
 
     pprint(best_params['params'], width=120)
 
+    print(midi_f0)
+    if not jnp.isnan(midi_f0):
+        best_params['params']['midi_f0'] = jnp.array([midi_f0])
+
+    return best_params['params']
+
 
 def parse_args():
     parser = argparse.ArgumentParser(description="Optimize MinimalSquareSynth with CMA-ES.")
     parser.add_argument("--audio", type=str, default="audio_targets/lah.wav", help="Path to target mono wav")
-    parser.add_argument("--generations", type=int, default=40, help="Number of CMA-ES generations")
-    parser.add_argument("--population", type=int, default=16, help="Population size for CMA-ES")
-    parser.add_argument("--sigma", type=float, default=2.0, help="Initial sigma (step size) for CMA-ES")
+    parser.add_argument("--generations", type=int, default=400, help="Number of CMA-ES generations")
+    parser.add_argument("--population", type=int, default=20, help="Population size for CMA-ES")
+    parser.add_argument("--sigma", type=float, default=0.1, help="Initial sigma (step size) for CMA-ES")
     parser.add_argument("--seed", type=int, default=0, help="Random seed")
     return parser.parse_args()
 
