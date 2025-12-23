@@ -67,7 +67,6 @@ class MinimalSquareSynth(nn.Module):
         osc = self.vco(midi_f0, None)
         amp = self.vca(osc, env_audio)
 
-        # Build cutoff control at control rate, then upsample
         cutoff_hz = jnp.clip(self.cutoff, self.min_cutoff, self.max_cutoff)
         cutoff_ctrl = jnp.broadcast_to(
             cutoff_hz[:, None], (self.config.batch_size, self.config.control_buffer_size)

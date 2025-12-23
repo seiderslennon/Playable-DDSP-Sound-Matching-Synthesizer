@@ -57,22 +57,6 @@ def seconds_to_cv(attack_time_sec, slider=0.5, cv_depth=1.0):
 
     return V
 
-def norm_to_cutoff(norm):
-    """Map normalized cutoff -> Hz on a log scale."""
-    norm = jnp.clip(norm, 0.0, 1.0)
-    return jnp.exp(LOG_CUTOFF_MIN + norm * (LOG_CUTOFF_MAX - LOG_CUTOFF_MIN))
-
-
-def norm_to_midi_f0(norm):
-    """Map normalized value -> MIDI note."""
-    norm = jnp.clip(norm, 0.0, 1.0)
-    return MIDI_MIN + norm * (MIDI_MAX - MIDI_MIN)
-
-
-def midi_f0_to_norm(midi_f0):
-    """Map MIDI note -> normalized value in [0,1]."""
-    return jnp.clip((midi_f0 - MIDI_MIN) / (MIDI_MAX - MIDI_MIN), 0.0, 1.0)
-
 
 def main():
     args = parse_args()
