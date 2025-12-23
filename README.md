@@ -1,8 +1,4 @@
-A Python project that uses an evolutionary algorithm (CMA-ES) to optimize synthesizer parameters to match target audio files, then sends the optimized parameters to VCV Rack via OSC.
-**Audio-to-Synth Matching**: Train a synthesizer to match a target audio file, works best for 1-4s with a well-defined envelope.
-**JAX-based Synthesis**: Fast, GPU-accelerated audio synthesis using Synthax
-**VCV Rack Integration**: Sends optimized parameters to VCV Rack via OSC
-**Modular Components**: VCO (square/saw), VCA, LPF, and ADSR envelope
+A Python project that uses an evolutionary algorithm (CMA-ES) to optimize synthesizer parameters (LFO, VCA, VCF, ASDR) to match target audio files, then sends the optimized parameters to VCV Rack via OSC. Uses Jax for fast audio synthesis. Works best for 1-4s audio clips with a well-defined envelope.
 
 How it works:
 1. **Load Target**: Loads and analyzes the target audio file
@@ -20,7 +16,7 @@ Usage:
 python main.py --audio audio_path.wav
 ```
 
-- `--audio`: Path to target audio file (default: `audio_targets/lah.wav`)
+- `--audio`: Path to target audio file
 - `--generations`: Number of CMA-ES generations (default: 400)
 - `--population`: Population size for evolution (default: 20)
 - `--sigma`: Initial step size (default: 0.1)
