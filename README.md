@@ -1,4 +1,4 @@
-A Python project that uses evolutionary algorithms (CMA-ES) to optimize synthesizer parameters to match target audio files, then sends the optimized parameters to VCV Rack via OSC.
+A Python project that uses an evolutionary algorithm (CMA-ES) to optimize synthesizer parameters to match target audio files, then sends the optimized parameters to VCV Rack via OSC.
 
 How it works:
 1. **Load Target**: Loads and analyzes the target audio file
@@ -14,8 +14,7 @@ Features:
 
 <!-- ![Alt text](path/to/your/demo.gif) -->
 
-### Usage
-
+Usage:
 - Python 3.8+
 - VCV Rack (for real-time synthesis)
 
@@ -23,7 +22,6 @@ Features:
 python main.py --audio audio_path.wav
 ```
 
-Options:
 - `--audio`: Path to target audio file (default: `audio_targets/lah.wav`)
 - `--generations`: Number of CMA-ES generations (default: 400)
 - `--population`: Population size for evolution (default: 20)
